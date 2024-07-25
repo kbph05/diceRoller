@@ -1,2 +1,3 @@
-Configuration Module: This module will handle the 
-input configuration for the number of dice and the number of sides per die.
+-- Configuration Module: This module will handle the 
+-- input configuration for the number of dice and the number of sides per die.
+--     it includes the random Number Generator which will generate random numbers for the dice rolls.
