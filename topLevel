@@ -1,0 +1,42 @@
+Top Module: This is the main file that integrates all the submodules.
+
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+entity topLevel is
+	port (softReset, hardReset, clockIn, sideNum, diceNum, roll, : in std_logic;
+			dispNum : out std_logic_vector(6 downto 0);		
+end topLevel;
+	
+	
+architecture behaviour of topLevel is
+	
+
+
+begin
+
+	U1 : HEXDisplay
+		port map(
+		
+	);
+
+
+	 
+end behaviour;
+
+
+process(clock_50)
+	begin	
+		if rising_edge(clock_50) then
+			q <= andGate;
+		end if;
+	
+	if w = '1' then
+		mux <= '1';
+	else 
+		mux <= q;
+	end if;
+	
+	end process;
