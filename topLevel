@@ -34,13 +34,13 @@ signal clock_sig : std_logic;
 begin
 	U1 : reset 
 	port map(
-			softReset <= KEY(0),
-			hardReset <= KEY(1)
+		softReset => KEY(0),
+		hardReset => KEY(1)
 	);
 	U2 : FSM 
 	port map(
-			clockIn <= KEY(2),
-			clockOut <= clock_sig
+		clockIn => KEY(2),
+		clockOut => clock_sig
 	); 
 
 	 
