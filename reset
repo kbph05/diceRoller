@@ -6,21 +6,25 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity reset is
-port (softReset : in std_logic;
-		hardReset : in std_logic
-); 
-end configureDice;
-	
+	port (softReset : in std_logic;
+			hardReset : in std_logic
+	); 
+end reset;
+
+
 
 architecture func of reset is 
+
+signal hexDisplays : std_logic_vector(7 downto 0);
 begin
-	process(clock)
-	begin
-	if hardReset = '0' then
+
+process(hexDisplays)
+begin
+	if hardReset = '0' then			
 		if softReset = '0' then
 			hexDisplays <= (others => '0');
 		end if;
-		end if;
-	end process;
+	end if;
+end process;
 	
 end func;
