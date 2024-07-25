@@ -7,8 +7,6 @@ use ieee.numeric_std.all;
 
 entity HEXdisplay is
 port (hex_select : in std_logic_vector(7 downto 0);
-		onOff : out std_logic_vector(7 downto 0)
---		HEX0, HEX1, HEX2, HEX3, HEX4, HEX5, HEX6, HEX7 : out std_logic_vector(6 downto 0)
 		);
 end HEXdisplay;
 
