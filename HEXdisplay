@@ -5,78 +5,12 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-
 entity HEXdisplay is
-port (
-		KEY : in std_logic_vector(3 downto 0);
-		SW : in std_logic_vector(17 downto 0);
-		HEX0, HEX1, HEX2, HEX3, HEX4, HEX5, HEX6, HEX7 : out std_logic_vector(6 downto 0)
+port (hex_select : in std_logic_vector(7 downto 0);
+		onOff : out std_logic_vector(7 downto 0)
+--		HEX0, HEX1, HEX2, HEX3, HEX4, HEX5, HEX6, HEX7 : out std_logic_vector(6 downto 0)
 		);
 end HEXdisplay;
 
-
-
-
-
-architecture behaviour of HEXdisplay is
-component segDecoder is
-		port (
-			  D : in  std_logic_vector (3 downto 0);
-			  Y : out std_logic_vector (6 downto 0)
-		 );
-end component;
-component topLevel is
-	port (softReset, hardReset, clockIn, sideNum, diceNum, roll, : in std_logic;
-			dispNum : out std_logic_vector(6 downto 0)
-		);	
-end component;
-
-
-signal x_sig : std_logic_vector(3 downto 0);
-signal hex_sig : std_logic_vector(6 downto 0);
-
-
-begin
-
-	if rising_edge(clock_50) then
-			q <= andGate;
-		end if;
-	
-	if w = '1' then
-		mux <= '1';
-	else 
-		mux <= q;
-	end if;
-	
-	end process;
-	U1 : segDecoder 
-	port map(
-		D => x_sig,
-		Y => hex_sig
-	);
-
- -- Distribute the temporary signal to all HEX outputs
-	 HEX0 <= hex_sig;
-    HEX1 <= hex_sig;
-    HEX2 <= hex_sig;
-    HEX3 <= hex_sig;
-    HEX4 <= hex_sig;
-    HEX5 <= hex_sig;
-    HEX6 <= hex_sig;
-    HEX7 <= hex_sig;
-
-	
-	U2 : topLevel
-	port map(
-		softReset => SW(0),
-		hardReset => SW(1),
-		sideNum => KEY(1),
-		diceNum => KEY(2),
-		roll => KEY(0),
-		dispNum => hex_sig
-	);
-
-		 
-end behaviour;
 
 	
