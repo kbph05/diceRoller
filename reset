@@ -1,1 +1,10 @@
 Reset Controller Module: This module will handle the soft and hard reset functionality.
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+entity reset is
+port (softReset : in std_logic;
+		hardReset : in std_logic;
+		numOfDice : out std_logic_vector(7 downto 0)
