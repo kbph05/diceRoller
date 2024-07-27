@@ -1,62 +1,128 @@
--- Top Module: This is the main file that integrates all the submodules.
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
 
+entity Diceroller is
+   Port (
+       clk : in STD_LOGIC;
+       KEY : in std_logic_vector(3 downto 0); -- roll key
+       dice_value : out INTEGER;  -- Current value of the die
+		 HEX0, HEX1, HEX2, HEX3, HEX4, HEX5, HEX6, HEX7 : out STD_LOGIC_VECTOR(6 downto 0) := "1111111";
+		 SW : in std_logic_vector(8 downto 0); -- how many dice to use
+       state : out STD_LOGIC_VECTOR(1 downto 0)  -- FSM state output for debugging
+   );
+end Diceroller;
 
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
-
-entity topLevel is
-end topLevel;
-	
-	
-architecture behaviour of topLevel is
-
-signal rollState : std_logic := '0';
-signal numOfSides : std_logic := '0';
-signal numOfDice : std_logic := '0';
-signal valueOfRoll : std_logic_vector(3 downto 0) := '0000';
-
-
-component reset is
-	port (softReset : in std_logic;
-			rollState : inout std_logic := 
-			hardReset : in std_logic
-	); 
-end component;
+architecture Behavioral of Diceroller is
 component configureDice is
-port (selection : in std_logic_vector(1 downto 0);
-		rollState : inout std_logic := '0'
-		numOfSides : out std_logic_vector(3 downto 0);
-		numOfDice : out std_logic_vector(3 downto 0)
+port (selection : in std_logic;
+		numOfDice : out integer
 );
 end component;
-
-component FSM is
-port (clockIn : in std_logic;
-		rollState : inout std_logic := '0';
-		clockOut : out std_logic
-			);
+component segDecoder is
+    Port (
+        D : in  std_logic_vector (3 downto 0);
+        Y : out std_logic_vector (6 downto 0)
+    );
 end component;
 
+   type state_type is (IDLE, ROLLING, STOPPING, DONE);
+   signal current_state, next_state : state_type;
+   signal counter : INTEGER := 0;
+   signal roll_count : INTEGER := 0;
+	signal numOfSides : INTEGER := 0;
+	signal numOfDice : INTEGER := 1;
+	signal display : STD_LOGIC_VECTOR(7 downto 0);
+
 begin
+   process(clk)
+   begin
+       if rising_edge(clk) then
+           current_state <= next_state;
+       end if;
+   end process;
 
+   process(current_state, KEY(3), roll_count)
+   begin
+       case current_state is
+           when IDLE =>
+               if KEY(3) = '1' then
+                   next_state <= ROLLING;
+               else
+                   next_state <= IDLE;
+               end if;
 
-	U1 : reset 
+           when ROLLING =>
+               counter <= counter + 1;
+               if counter > numOfSides then
+                   counter <= 1;
+               end if;
+               roll_count <= roll_count + 1;
+               if roll_count > numOfSides * 2 then
+                   next_state <= STOPPING;
+               else
+                   next_state <= ROLLING;
+               end if;
+
+           when STOPPING =>
+               next_state <= DONE;
+
+           when DONE =>
+               if KEY(3) = '0' then
+                   next_state <= IDLE;
+               else
+                   next_state <= DONE;
+               end if;
+       end case;
+   end process;
+
+   dice_value <= counter;
+
+--   process(counter, numOfDice, display)
+--   begin
+--		case numOfDice is
+--			when 1 => display(0) <= HEX0;
+--			when 2 => display(1) <= display(0) and HEX1;
+--			when 3 => display(2) <= display(1) and HEX2;
+--			when 4 => display(3) <= display(2) and HEX3;
+--			when 5 => display(4) <= display(3) and HEX4;
+--			when 6 => display(5) <= display(4) and HEX5;
+--			when 7 => display(6) <= display(5) and HEX6;
+--			when 8 => display(7) <= display(6) and HEX7;
+--		end case;
+--		
+--		case counter is
+--			when 1 => y <= "0000001"; -- Display 1
+--			when 2 => y <= "1001111"; -- Display 2
+--			when 3 => y <= "0010010"; -- Display 3
+--			when 4 => y <= "0000110"; -- Display 4
+--			when 5 => y <= "1001100"; -- Display 5
+--			when 6 => y <= "0100100"; -- Display 6
+--			when others => y <= "1111111"; -- Blank display
+--		 end case;	
+--   end process;
+--	
+	
+	U1 : configureDice
 	port map(
-			softReset => KEY(0),
-			rollState => rollState,
-			hardReset => KEY(1)
+		numOfDice => numOfDice,
+		selection => KEY(1)
 	);
-	U2 : FSM 
-	port map(
-			clockIn => SW(0),
-			rollState => rollState,
-			clockOut => clock_sig
-	);
-	U3 : configureDice 
-	port map(
-		selection => KEY(2),
-		rollState => rollState,
-		numOfSides => numOfSides,
-		numOfDice => numOfDice
-	); 		
+	SW(7) <= HEX7
+	SW(6) <= HEX6
+	SW(5) <= HEX5
+	SW(4) <= HEX4
+	SW(3) <= HEX3
+	SW(2) <= HEX2
+	SW(1) <= HEX1
+	SW(0) <= HEX0
+
+	numOfDisplay : for i in numOfDice generate
+		U2 : segDecoder
+		port map(
+			D => dice_value,
+			Y => HEX0
+		);
+	end generate numOfDisplay;
+	
+end Behavioral;
