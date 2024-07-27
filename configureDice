@@ -8,33 +8,24 @@ use ieee.numeric_std.all;
 
 
 entity configureDice is
-port (selection : in std_logic_vector(1 downto 0);
-		numOfSides : out unsigned(3 downto 0);
-		numOfDice : out unsigned(3 downto 0)
+port (selection : in std_logic;;
+		numOfDice : out integer;
 ); 
 end configureDice;
 		
 
 architecture behavioural of configureDice is
 
-signal side_sig: unsigned(3 downto 0) := "0000";
-signal dice_sig: unsigned(3 downto 0) := "0000";
+signal dice_sig : integer;
 signal rollState : std_logic := '0';
 
 begin
 
 		process(selection)
 		begin
-		if rollState = '0' then
-			if rising_edge(selection(0)) then
-					side_sig <= side_sig + 1;
-			end if;
-			if rising_edge(selection(1)) then
-					dice_sig <= dice_sig + 1;
-			end if;
-		end if;
-
-		numOfSides <= side_sig;
+		for i in 0 to 7 loop
+        if SW(i) = '1' then
+            numOfDice := numOfDice + 1;
 		numOfDice <= dice_sig;
 		
 		end process;
