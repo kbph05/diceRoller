@@ -2,18 +2,19 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
-entity diceRoller is
+entity diceRollerVHDL is
    Port (
        clk : in STD_LOGIC;
        KEY : in std_logic_vector(3 downto 0); -- roll key
        dice_value : out INTEGER;  -- Current value of the die
-		 HEX0, HEX1, HEX2, HEX3, HEX4, HEX5, HEX6, HEX7 : out STD_LOGIC_VECTOR(6 downto 0);
+		 HEX0 : out std_logic_vector(6 downto 0); --HEX1, HEX2, HEX3, HEX4, HEX5, HEX6, HEX7 : out STD_LOGIC_VECTOR(6 downto 0);
        state : out STD_LOGIC_VECTOR(1 downto 0)  -- FSM state output for debugging
    );
-end diceRoller;
+end diceRollerVHDL;
 
-architecture Behavioral of diceRoller is
-type segPatternArray is array(0 downto 9) of STD_LOGIC_VECTOR(6 downto 0);
+architecture Behavioral of diceRollerVHDL is
+type segPatternArray is array(9 downto 0) of STD_LOGIC_VECTOR(6 downto 0);
+type stopDiceArray is array(7 downto 0) of INTEGER;
 
 constant segPatterns : segPatternArray := (
       "1000000", -- 0
@@ -36,10 +37,12 @@ constant segPatterns : segPatternArray := (
    signal roll_count : INTEGER := 0;
 	signal numOfSides : INTEGER := 6;
 	signal numOfDice : INTEGER := 1;
-	signal stopTimes : std_logic_vector(7 downto 0);
+	signal stopTimes : stopDiceArray;
 	signal dice_stopped : std_logic_vector(7 downto 0);
+	
 begin
 
+	-- FSM 
    process(clk)
    begin
        if rising_edge(clk) then
@@ -47,6 +50,15 @@ begin
        end if;
    end process;
 
+	-- determine number of dice
+	process(KEY(1))
+	begin		
+		if rising_edge(KEY(1)) then
+			numOfDice <= numOfDice + 1;
+		end if;	
+	end process;
+
+	-- rolling process
    process(current_state, KEY(3), roll_count)
    begin
 	case current_state is
@@ -55,7 +67,7 @@ begin
 				next_state <= ROLLING;
 				counter <= 1;
 				roll_count <= 0;
-				stopTimes <= (others => '0');
+				stopTimes <= (others => 0);
 				dice_stopped <= (others => '0');
 			else
 				next_state <= IDLE;
@@ -75,14 +87,14 @@ begin
 			
 		when STOPPING =>	
 			for i in 1 to numOfDice loop
-				if stopTimes(i) = "0" then
-					stopTimes(i) <= counter + (i * 10);
+				if stopTimes(i) = 0 then
+					stopTimes(i) <= (counter + (i * 10));
 				elsif (counter >= stopTimes(i)) then
 					dice_stopped(i) <= '1';
 				end if;
 			end loop;
 			
-				if dice_stopped <= (others => "1") then
+				if dice_stopped = "11111111" then
 					next_state <= DONE;
 				end if;
 				
@@ -96,13 +108,7 @@ begin
        end case;
    end process;
 
-   dice_value <= counter;
-
---	U1 : configureDice
---	port map(
---		numOfDice => numOfDice,
---		selection => KEY(1)
---	);
+   dice_value <= counter; -- Add value of counter to display
 	
 	process(counter)
 	begin
