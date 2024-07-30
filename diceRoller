@@ -3,11 +3,12 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
 entity diceRollerVHDL is
+generic (maxNumDice : integer := 8);
    Port (
        clk : in STD_LOGIC;
        KEY : in std_logic_vector(3 downto 0); -- roll key
        dice_value : out INTEGER;  -- Current value of the die
-		 HEX0 : out std_logic_vector(6 downto 0); --HEX1, HEX2, HEX3, HEX4, HEX5, HEX6, HEX7 : out STD_LOGIC_VECTOR(6 downto 0);
+		 HEX0, HEX1, HEX2, HEX3, HEX4, HEX5, HEX6, HEX7 : out STD_LOGIC_VECTOR(6 downto 0);
        state : out STD_LOGIC_VECTOR(1 downto 0)  -- FSM state output for debugging
    );
 end diceRollerVHDL;
@@ -31,7 +32,7 @@ constant segPatterns : segPatternArray := (
 
 
    type state_type is (IDLE, ROLLING, STOPPING, DONE);
-	
+
    signal current_state, next_state : state_type := IDLE;
    signal counter : INTEGER := 0;
    signal roll_count : INTEGER := 0;
@@ -42,7 +43,7 @@ constant segPatterns : segPatternArray := (
 	
 begin
 
-	-- FSM 
+	-- next state becomes the current state
    process(clk)
    begin
        if rising_edge(clk) then
@@ -54,10 +55,12 @@ begin
 	process(KEY(1))
 	begin		
 		if rising_edge(KEY(1)) then
-			numOfDice <= numOfDice + 1;
-		end if;	
+			if numOfDice <= maxNumDice then
+				numOfDice <= numOfDice + 1;
+			end if;
+		end if;
 	end process;
-
+	
 	-- rolling process
    process(current_state, KEY(3), roll_count)
    begin
@@ -86,7 +89,7 @@ begin
 			end if;
 			
 		when STOPPING =>	
-			for i in 1 to numOfDice loop
+			for i in 0 to (numOfDice - 1) loop
 				if stopTimes(i) = 0 then
 					stopTimes(i) <= (counter + (i * 10));
 				elsif (counter >= stopTimes(i)) then
@@ -112,11 +115,30 @@ begin
 	
 	process(counter)
 	begin
-		if (counter >= 0) and (counter <= 9) then
-			HEX0 <= segPatterns(counter);
-		else
-			HEX0 <= "1111111";
+	
+	for i in 0 to numOfDice loop
+		if dice_stopped = '1' then
+			case i is
+				when 0 => HEX0 <= segPatterns(counter mod 10);
+				when 1 => HEX1 <= segPatterns(counter mod 10);
+				when 2 => HEX2 <= segPatterns(counter mod 10);
+				when 3 => HEX3 <= segPatterns(counter mod 10);
+				when 4 => HEX4 <= segPatterns(counter mod 10);
+				when 5 => HEX5 <= segPatterns(counter mod 10);
+				when 6 => HEX6 <= segPatterns(counter mod 10);
+				when 7 => HEX7 <= segPatterns(counter mod 10);
+				when others => 
+					HEX0 <= "1111111",
+					HEX1 <= "1111111",
+					HEX2 <= "1111111",
+					HEX3 <= "1111111",
+					HEX4 <= "1111111",
+					HEX5 <= "1111111",
+					HEX6 <= "1111111",
+					HEX7 <= "1111111"
+			end case;
 		end if;
+	end loop
 	end process;
 
 	
